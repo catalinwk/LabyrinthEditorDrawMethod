@@ -43,6 +43,16 @@ public class Cell {
         return this.y;
         
     }
+
+    /**
+     * Gets Y coordinate
+     * @return column value
+     */
+    public int getY(){
+        return this.y;
+        
+    }
+
     
     /**
      * Gets cell row
@@ -51,6 +61,16 @@ public class Cell {
     public int getCellRow(){
         return this.x;
     }
+    
+    
+    /**
+     * Gets cell X
+     * @return row value
+     */
+    public int getX(){
+        return this.x;
+    }
+    
     public String toString(){
         return x+","+y;
     }
