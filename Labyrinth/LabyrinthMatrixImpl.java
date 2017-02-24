@@ -14,11 +14,18 @@ import java.util.*;
 public class LabyrinthMatrixImpl 
 
 implements Labyrinth {
-
+    /**
+     * CELL TYPES
+     */
+    public final int WALL_CELL = 1;
+    public final int EMPTY_CELL = 0;
+    public final int START_CELL = -1;
+    public final int FINISH_CELL = 2;
+    
     /**
      * cells storage
      */
-    private int[][] matrix = new int[100][100];
+    protected int[][] matrix = new int[100][100];
     
     /**
      * row count
@@ -37,6 +44,14 @@ implements Labyrinth {
     public int getRowCount(){
         return rows;
     };
+    
+    /**
+     * Setter for rows
+     * @param rows number of labyrinth rows
+     */
+    public void setRowCount(int rows){
+        this.rows = rows;
+    }
     
     private Cell startCell = new Cell(0,0);
     private Cell finishCell = new Cell(0,0);
@@ -57,6 +72,14 @@ implements Labyrinth {
      */
     public int getColumnCount(){
         return columns;
+    }
+
+    /**
+     * Setter for columns
+     * @param columns number the of columns
+     */
+    public void setColumnCount(int columns){
+        this.columns=columns;
     }
     
     /**
@@ -156,5 +179,23 @@ implements Labyrinth {
         }
         return  view;
     }
+      
+    /**
+     * Sets the value of the specified cell
+     * @param row cell row
+     * @param column cell column
+     * @param value cell value
+     */
+    public void setCellAt(int row, int column, int value){
+           matrix[row][column]=value;
+    }
     
+    /**
+     * Sets the value of the specified cell
+     * @param c Cell 
+     * @param value cell value
+     */
+    public void setCellAt(Cell c, int value){
+      matrix[c.x][c.y]=value;  
+    }
 }

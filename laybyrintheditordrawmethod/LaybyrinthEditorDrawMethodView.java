@@ -401,8 +401,6 @@ class LabyrinthImage extends javax.swing.JPanel {
         for (int i=0; i<=5; i++)
             g.drawRect(10+i*50, 0, 1, 250);
         
-       
-        
         for (int j=0; j<=5; j++)
             g.drawRect(10+0, j*50, 250, 1);
                
