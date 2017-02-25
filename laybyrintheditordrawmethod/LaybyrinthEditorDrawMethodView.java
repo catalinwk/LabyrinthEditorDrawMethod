@@ -20,9 +20,18 @@ import javax.swing.JFrame;
 import javax.swing.*;
 import java.awt.*;
 
-
+/**
+ * used for storing labyrinth image
+ */
+import java.awt.image.BufferedImage;
+/**
+ * used for labyrinth data model
+ */
+import Labyrinth.*;
+/**
+ * used for labyrinth drawing 
+ */
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 
 /**
  * author: Catalin Mazilu
@@ -33,7 +42,7 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
      * Labyrinth cell constants
      */
     final int WALL_CELL = 1;
-    final int START_CELL = -1;
+    final int START_CELL = 3;
     final int FREE_CELL = 0;
     final int FINISH_CELL = 2;
     
@@ -41,77 +50,65 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
      * Selected cell type to be used in the labyrinth
      */
     int selectedCellType=0;
+   
     
+    /**
+     * This is my labyrinth model, which stored the cell structure
+     */
+    LabyrinthMatrixImplExtended myLabyrinth;
     
+    /**
+     * Tracker for spacial structure of labyrinth matrix
+     */
+    CellTracker labyrinthTracker;
+    
+    /**
+     * This objects creates the labyrinth graphical image
+     */
+     LabyrinthImageCreator myImageCreator;
+    
+    /**
+     * This image stores the graphical representation of the labyrinth
+     */
+    BufferedImage labyrinthImage;
+    
+    /**
+     * GUI Drawing when constructor is called
+     * @param app 
+     */
     public LaybyrinthEditorDrawMethodView(SingleFrameApplication app) {
         super(app);
-
         initComponents();
+
+        /*
+         * Creating the labyrinth
+         */
+        myLabyrinth = new LabyrinthMatrixImplExtended(5,5);
         
-     
+        /*
+         * creating the labyrinth image
+         */
+        labyrinthImage = new BufferedImage(262, 262, BufferedImage.TYPE_INT_ARGB);
 
-        // status bar initialization - message timeout, idle icon and busy animation, etc
-        ResourceMap resourceMap = getResourceMap();
-        int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
-        messageTimer = new Timer(messageTimeout, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                statusMessageLabel.setText("");
-            }
-        });
-        messageTimer.setRepeats(false);
-        int busyAnimationRate = resourceMap.getInteger("StatusBar.busyAnimationRate");
-        for (int i = 0; i < busyIcons.length; i++) {
-            busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
-        }
-        busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
-                statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
-            }
-        });
-        idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
-        statusAnimationLabel.setIcon(idleIcon);
-        progressBar.setVisible(false);
-
-        // connecting action tasks to status bar via TaskMonitor
-        TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
-        taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-                if ("started".equals(propertyName)) {
-                    if (!busyIconTimer.isRunning()) {
-                        statusAnimationLabel.setIcon(busyIcons[0]);
-                        busyIconIndex = 0;
-                        busyIconTimer.start();
-                    }
-                    progressBar.setVisible(true);
-                    progressBar.setIndeterminate(true);
-                } else if ("done".equals(propertyName)) {
-                    busyIconTimer.stop();
-                    statusAnimationLabel.setIcon(idleIcon);
-                    progressBar.setVisible(false);
-                    progressBar.setValue(0);
-                } else if ("message".equals(propertyName)) {
-                    String text = (String)(evt.getNewValue());
-                    statusMessageLabel.setText((text == null) ? "" : text);
-                    messageTimer.restart();
-                } else if ("progress".equals(propertyName)) {
-                    int value = (Integer)(evt.getNewValue());
-                    progressBar.setVisible(true);
-                    progressBar.setIndeterminate(false);
-                    progressBar.setValue(value);
-                }
-            }
-        });
-    
-    
+        /*
+         * Creating the labyrinth tracker
+         */
+        labyrinthTracker = new CellTracker();
+        labyrinthTracker.createSpacialStructure(50, myLabyrinth.getRowCount(),myLabyrinth.getColumnCount());
+        
+        System.out.println(labyrinthTracker.getCell(10, 20));
+        System.out.println(labyrinthTracker.cellList);
+        
         labyrinthPanel.setLayout(new FlowLayout());
-        //labyrinthPanel.setLayout(null);
+
+        //drawing borders
+        myImageCreator = new LabyrinthImageCreator(labyrinthImage);
+        labyrinthPanel.add(myImageCreator,0,0);
         
-        LabyrinthImage li = new LabyrinthImage();
-                
-        labyrinthPanel.add(li,0,0);
+        
     
+        
+        
     }
 
     @Action
@@ -144,11 +141,6 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
-        statusPanel = new javax.swing.JPanel();
-        javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
-        statusMessageLabel = new javax.swing.JLabel();
-        statusAnimationLabel = new javax.swing.JLabel();
-        progressBar = new javax.swing.JProgressBar();
 
         mainPanel.setName("mainPanel"); // NOI18N
 
@@ -240,7 +232,7 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
                         .addComponent(startCellButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(finishCellButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(88, Short.MAX_VALUE))
+                .addContainerGap(113, Short.MAX_VALUE))
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -264,84 +256,102 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
 
         menuBar.add(helpMenu);
 
-        statusPanel.setName("statusPanel"); // NOI18N
-
-        statusPanelSeparator.setName("statusPanelSeparator"); // NOI18N
-
-        statusMessageLabel.setName("statusMessageLabel"); // NOI18N
-
-        statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        statusAnimationLabel.setName("statusAnimationLabel"); // NOI18N
-
-        progressBar.setName("progressBar"); // NOI18N
-
-        javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
-        statusPanel.setLayout(statusPanelLayout);
-        statusPanelLayout.setHorizontalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 452, Short.MAX_VALUE)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusAnimationLabel)
-                .addContainerGap())
-        );
-        statusPanelLayout.setVerticalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addComponent(statusPanelSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(statusMessageLabel)
-                    .addComponent(statusAnimationLabel)
-                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(3, 3, 3))
-        );
-
         setComponent(mainPanel);
         setMenuBar(menuBar);
-        setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Selection of wall cell
+     * @param evt mouse click event
+     */
 private void wallCell(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_wallCell
     // TODO add your handling code here:
     resetSelectionCell();
     this.wallCellButton.setBackground(Color.red);
-    this.selectedCellType=1;
+    this.selectedCellType=this.WALL_CELL;
     
 }//GEN-LAST:event_wallCell
 
+/**
+ * Selecting free cell type
+ * @param evt mouse click event
+ */
 private void freeCellButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_freeCellButtonMouseClicked
     // TODO add your handling code here:
     resetSelectionCell();
     this.freeCellButton.setBackground(Color.red);
     
-    this.selectedCellType=0;
+    this.selectedCellType=this.FREE_CELL;
 
 }//GEN-LAST:event_freeCellButtonMouseClicked
 
+/**
+ * Selecting start cell type
+ * @param evt mouse click event
+ */
 private void startCellButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_startCellButtonMouseClicked
     // TODO add your handling code here:
     resetSelectionCell();
     this.startCellButton.setBackground(Color.red);
-    this.selectedCellType=-1;
+    this.selectedCellType=this.START_CELL;
+    System.out.println("Start cell selected " + this.selectedCellType);
 }//GEN-LAST:event_startCellButtonMouseClicked
 
+/**
+ * Selecting finish cell type
+ * @param evt mouse click event
+ */
 private void finishCellButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_finishCellButtonMouseClicked
     // TODO add your handling code here:
     resetSelectionCell();
     this.finishCellButton.setBackground(Color.red);
-    this.selectedCellType=2;
+    this.selectedCellType=this.FINISH_CELL;
 }//GEN-LAST:event_finishCellButtonMouseClicked
 
+/**
+ * Handling mouse click on labyrinth construction site
+ * @param evt mouse click event
+ */
 private void labyrinthPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labyrinthPanelMouseClicked
       Point p = evt.getPoint();
       
       JOptionPane opPane = new JOptionPane(0);
-      opPane.showMessageDialog(labyrinthPanel,"X: "+p.x+ " Y: "+p.y);
+      //opPane.showMessageDialog(labyrinthPanel,"X: "+p.x+ " Y: "+p.y);
+      //opPane.showMessageDialog(labyrinthPanel,"Cell  "+labyrinthTracker.getCell(p.x, p.y).getX()+", "+labyrinthTracker.getCell(p.x, p.y).getY());
+      
+      int cellX = labyrinthTracker.getCell(p.x, p.y).getX();
+      int cellY = labyrinthTracker.getCell(p.x, p.y).getY();
+      
+      System.out.println("Empty " + this.FREE_CELL);
+      System.out.println("Wall " + this.WALL_CELL);
+      System.out.println("Start  " + this.START_CELL);
+      System.out.println("Finish " + this.FINISH_CELL);
+      System.out.println("Selected cell type is "+ this.selectedCellType);
+      
+      
+      //cell drawing
+      if (selectedCellType==this.FREE_CELL){
+          myImageCreator.drawEmptyCell(labyrinthTracker.getCellSpatialFirstCorner(cellX, cellY),labyrinthTracker.getCellSpatialSecondCorner(cellX, cellY));
+      }
+    
+        //cell drawing
+      if (selectedCellType==this.WALL_CELL){
+          myImageCreator.drawWallCell(labyrinthTracker.getCellSpatialFirstCorner(cellX, cellY),labyrinthTracker.getCellSpatialSecondCorner(cellX, cellY));
+      }
+      
+        //cell drawing
+      if (selectedCellType==this.START_CELL){
+          myImageCreator.drawStartCell(labyrinthTracker.getCellSpatialFirstCorner(cellX, cellY),labyrinthTracker.getCellSpatialSecondCorner(cellX, cellY));
+      }
+      
+        //cell drawing
+      if (selectedCellType==this.FINISH_CELL){
+          myImageCreator.drawFinishCell(labyrinthTracker.getCellSpatialFirstCorner(cellX, cellY),labyrinthTracker.getCellSpatialSecondCorner(cellX, cellY));
+      }
+    
+      myImageCreator.updateUI();
+    
+    
       
 }//GEN-LAST:event_labyrinthPanelMouseClicked
 
@@ -351,19 +361,10 @@ private void labyrinthPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FI
     private javax.swing.JPanel labyrinthPanel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JProgressBar progressBar;
     private javax.swing.JButton startCellButton;
-    private javax.swing.JLabel statusAnimationLabel;
-    private javax.swing.JLabel statusMessageLabel;
-    private javax.swing.JPanel statusPanel;
     private javax.swing.JButton wallCellButton;
     // End of variables declaration//GEN-END:variables
 
-    private final Timer messageTimer;
-    private final Timer busyIconTimer;
-    private final Icon idleIcon;
-    private final Icon[] busyIcons = new Icon[15];
-    private int busyIconIndex = 0;
 
     private JDialog aboutBox;
     
@@ -381,30 +382,105 @@ private void labyrinthPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FI
     
     
     
-}
+}//end of public class
 
 //this class creates a labyrinth representation
-class LabyrinthImage extends javax.swing.JPanel {
+class LabyrinthImageCreator extends javax.swing.JPanel {
+ 
     
-      LabyrinthImage() {
-            // set a preferred size for the custom panel.
-                   super.setPreferredSize(new Dimension(420,420));
+    private  BufferedImage myImage; 
+    int phase=0; //for testing pursposes
+    
+      LabyrinthImageCreator(BufferedImage Img) {
+            //set a preferred size for the custom panel.
+              super.setPreferredSize(new Dimension(420,420));
+              
+              this.myImage = Img;
         }
+   
     
+    /**
+     * This method is called to draw the object
+     * @param g graphic context
+     */
     @Override
     public void paintComponent(Graphics g){
         super.paintComponent(g);
 
-        g.setColor(Color.black);
+        Graphics g2 = myImage.getGraphics();
+        g2.setColor(Color.white);
+        g2.setPaintMode();
         
-        //desenarea liniior verticale
+        
+        //drawing vertical lines
         for (int i=0; i<=5; i++)
-            g.drawRect(10+i*50, 0, 1, 250);
-        
+            g2.drawRect(i*50, 0, 1, 250);
+        //drawing horizontal lines
         for (int j=0; j<=5; j++)
-            g.drawRect(10+0, j*50, 250, 1);
+            g2.drawRect(0, j*50, 250, 1);
                
+
+        g.drawImage(myImage, 10, 0, this);
+        
+        g2.dispose();
+    
     }
     
+    /**
+     * Draws a START cell at specified location
+     * @param firstCorner first corner of the cell
+     * @param secondCorner second corner of the cell
+     */
+    public void drawStartCell(Cell firstCorner, Cell secondCorner){
+        System.out.println("Draw start Cell");
+        Graphics g2 = myImage.getGraphics();
+        g2.setColor(Color.GREEN);
+        g2.setPaintMode();
+        g2.fillRect(firstCorner.getX(), firstCorner.getY(), secondCorner.getX()-firstCorner.getX(), secondCorner.getY()-firstCorner.getY());
+    
+    }
+    
+    /**
+     * Draws a FINISH cell at specified location
+     * @param firstCorner first corner of the cell
+     * @param secondCorner second corner of the cell
+     */
+    public void drawFinishCell(Cell firstCorner, Cell secondCorner){
+        System.out.println("Draw Finish Cell");
+        Graphics g2 = myImage.getGraphics();
+        g2.setColor(Color.blue);
+        g2.setPaintMode();
+        g2.fillRect(firstCorner.getX(), firstCorner.getY(), secondCorner.getX()-firstCorner.getX(), secondCorner.getY()-firstCorner.getY());
+    
+    }
+    
+     /**
+     * Draws an EMPTY cell at specified location
+     * @param firstCorner first corner of the cell
+     * @param secondCorner second corner of the cell
+     */
+    public void drawEmptyCell(Cell firstCorner, Cell secondCorner){
+        System.out.println("Draw Empty Cell");
+        Graphics g2 = myImage.getGraphics();
+        g2.setColor(Color.white);
+        g2.setPaintMode();
+        g2.fillRect(firstCorner.getX(), firstCorner.getY(), secondCorner.getX()-firstCorner.getX(), secondCorner.getY()-firstCorner.getY());
+    
+    }
+    
+     /**
+     * Draws a WALL cell at specified location
+     * @param firstCorner first corner of the cell
+     * @param secondCorner second corner of the cell
+     */
+    public void drawWallCell(Cell firstCorner, Cell secondCorner){
+        System.out.println("Draw Wall Cell");
+        Graphics g2 = myImage.getGraphics();
+        g2.setColor(Color.red);
+        g2.setPaintMode();
+        g2.fillRect(firstCorner.getX(), firstCorner.getY(), secondCorner.getX()-firstCorner.getX(), secondCorner.getY()-firstCorner.getY());
+    
+    }
+
 }
 

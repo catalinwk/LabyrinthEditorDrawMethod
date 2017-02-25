@@ -14,10 +14,10 @@ public class CellTracker {
     /**
      * keeps cell list
      */
-    ArrayList<SuperCell> cellList = new ArrayList<SuperCell>();
+    public ArrayList<SuperCell> cellList = new ArrayList<SuperCell>();
     
     /**
-     * Adds a cell to cell list
+     * Adds a spacial cell to cell list
      * @param x matrix coordinate
      * @param y matrix coordinate
      * @param corner1X X coordinate of the first corner
@@ -38,12 +38,90 @@ public class CellTracker {
     public Cell getCell(int pointX, int pointY){
         
         for (SuperCell s:cellList){
-            if (  pointX > s.getFirstCorner().getX() && pointX < s.getSecondCorner().getX() && pointY > s.getSecondCorner().getY() && pointY< s.getSecondCorner().getY()      )
+            if (  pointX > s.getFirstCorner().getX() && pointX < s.getSecondCorner().getX() && pointY > s.getFirstCorner().getY() && pointY< s.getSecondCorner().getY()      )
                 return new Cell(s.getX(),s.getY());
         }
         
         return null;
     }
+    
+    /**
+     * Creates a spacial tracking structure for a matrix
+     * @param cell_size, the side length of a cell 
+     * @param rows number of rows
+     * @param columns number of columns
+     */
+    public void createSpacialStructure(int cell_size, int rows, int columns){
+           
+        for (int i=0; i<rows; i++) //going by lines, y coodrinate
+            for (int j=0; j<columns; j++) //going by columns x coordinate
+            {
+                    int cornerX1 = cell_size*j;
+                    int cornerY1 = cell_size*i;
+                    int cornerX2 = cornerX1+cell_size;
+                    int cornerY2 = cornerY1+cell_size;
+                    
+                    this.addCell(i, j, cornerX1, cornerY1, cornerX2, cornerY2);
+                   
+            }
+    }
+    
+    /**
+     * Gets the spacial X coordinate of a matrix cell
+     * @param x cell row
+     * @param y cell column
+     * @return X spacial coordinate of cell
+     */
+    public int getCellSpatialFirstCornerX(int x, int y){
+        for (SuperCell s:cellList){
+            if (s.getX()==x && s.getY()==y)
+                return s.getFirstCorner().getX();
+        }
+        return 0;
+    }
+
+  /**
+     * Gets the spacial y coordinate of a matrix cell
+     * @param x cell row
+     * @param y cell column
+     * @return X spacial coordinate of cell
+     */
+  public int getCellSpatialFirstCornerY(int x, int y){
+        for (SuperCell s:cellList){
+            if (s.getX()==x && s.getY()==y)
+                return s.getFirstCorner().getY();
+        }
+        return 0;
+    }    
+
+  /**
+   * Returns spatial cell first corner
+   * @param x matrix cell row
+   * @param y matrix cell column
+   * @return first corner of the cell
+   */
+  public Cell getCellSpatialFirstCorner(int x, int y){
+          for (SuperCell s:cellList){
+            if (s.getX()==x && s.getY()==y)
+                return s.getFirstCorner();
+        }
+        return null;
+  }
+  /**
+   * Returns spatial cell first corner
+   * @param x matrix cell row
+   * @param y matrix cell column
+   * @return first corner of the cell
+   */
+  public Cell getCellSpatialSecondCorner(int x, int y){
+          for (SuperCell s:cellList){
+            if (s.getX()==x && s.getY()==y)
+                return s.getSecondCorner();
+        }
+        return null;
+  }
+
+
 }
 
 
@@ -94,6 +172,8 @@ class SuperCell extends Cell {
         return secondCorner;
     }
     
-   
+   public String toString(){
+       return super.toString() + " " + firstCorner.toString() + " " + secondCorner.toString()+ " | ";
+   }
 
 }

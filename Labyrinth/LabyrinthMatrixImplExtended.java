@@ -30,7 +30,7 @@ public class LabyrinthMatrixImplExtended extends LabyrinthMatrixImpl{
      * @param columns number of columns
      * @param rows number of rows
      */
-    LabyrinthMatrixImplExtended(int rows, int columns){
+    public LabyrinthMatrixImplExtended(int rows, int columns){
         this.setColumnCount(columns);
         this.setRowCount(rows);
     }
