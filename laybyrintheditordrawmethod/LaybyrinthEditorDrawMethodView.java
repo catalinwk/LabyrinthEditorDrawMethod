@@ -19,6 +19,8 @@ import javax.swing.JFrame;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
+import javax.imageio.*;
 
 /**
  * used for storing labyrinth image
@@ -202,6 +204,30 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
             finishCellFillColor = JColorChooser.showDialog(labyrinthPanel, "Choose Background Color",Color.red);
     }
     
+    /**
+     * Saving labyrinth Image to file as PNG
+     */
+    @Action 
+    public void saveImagePNG () {
+        //creating a file chooser
+        JFileChooser saveFile = new JFileChooser();
+        saveFile.showSaveDialog(null);
+        
+        //getting name of desired file
+        String path=saveFile.getSelectedFile().getAbsolutePath();
+        String filename=saveFile.getSelectedFile().getName();
+        
+        //write image to file
+        try {
+                      
+            File outputfile = new File(path);
+            ImageIO.write(myImageCreator.getImage(), "png", outputfile);
+        } catch (IOException e) {
+            JOptionPane opPane = new JOptionPane(0);
+            opPane.showMessageDialog(labyrinthPanel,"File Error" + e.getMessage());
+        }
+                
+    }
     
     
     /** 
@@ -238,6 +264,8 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem6 = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem7 = new javax.swing.JMenuItem();
 
         mainPanel.setMaximumSize(new java.awt.Dimension(800, 600));
         mainPanel.setName("mainPanel"); // NOI18N
@@ -419,6 +447,16 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
 
         menuBar.add(colorsMenu);
 
+        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
+        jMenu1.setName("jMenu1"); // NOI18N
+
+        jMenuItem7.setAction(actionMap.get("saveImagePNG")); // NOI18N
+        jMenuItem7.setText(resourceMap.getString("jMenuItem7.text")); // NOI18N
+        jMenuItem7.setName("jMenuItem7"); // NOI18N
+        jMenu1.add(jMenuItem7);
+
+        menuBar.add(jMenu1);
+
         setComponent(mainPanel);
         setMenuBar(menuBar);
     }// </editor-fold>//GEN-END:initComponents
@@ -549,12 +587,14 @@ private void labyrinthPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FI
     private javax.swing.JButton finishCellButton;
     private javax.swing.JButton freeCellButton;
     private javax.swing.JButton jButton1;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
@@ -692,6 +732,14 @@ class LabyrinthImageCreator extends javax.swing.JPanel {
         g2.fillRect(firstCorner.getX(), firstCorner.getY(), secondCorner.getX()-firstCorner.getX(), secondCorner.getY()-firstCorner.getY());
         g2.setColor(strokeColor);
         g2.drawRect(firstCorner.getX(), firstCorner.getY(), secondCorner.getX()-firstCorner.getX(), secondCorner.getY()-firstCorner.getY());
+    }
+    
+    /** 
+     * Returns the image of labyrinth
+     * @return Image of Labyrinth
+     */
+    public BufferedImage getImage(){
+        return myImage;
     }
 
 }
