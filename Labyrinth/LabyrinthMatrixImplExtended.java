@@ -63,16 +63,24 @@ public class LabyrinthMatrixImplExtended extends LabyrinthMatrixImpl{
         if ( !isBorderCell(row,column))
             return false;
         
+        
+        Cell sc = this.getStartCell();
         /*
          * Second step is to reset an existing startCell
-         */
-        Cell sc = this.getStartCell();
+         * UNUSED code variant
+        
         this.setCellAt(sc,this.EMPTY_CELL);
-         /*
-         * Third step is to set the new start cell
+         */
+         
+        //our code makes posibile just 1 setting of start CELL
+        if (matrix[sc.getX()][sc.getY()]==this.START_CELL)
+            return false;
+        
+        /*
+         * Third step is to set the new start cell in the matrix and the variable startCell
          */
         this.setCellAt(row, column, this.START_CELL);
-        
+        this.startCell.setCell(row, column);
         return true;
     }
 
@@ -91,20 +99,46 @@ public class LabyrinthMatrixImplExtended extends LabyrinthMatrixImpl{
         if ( !isBorderCell(row,column))
             return false;
         
-        /*
-         * Second step is to reset an existing startCell
-         */
         Cell sc = this.finishCell();
-        this.setCellAt(sc,this.EMPTY_CELL);
-         /*
-         * Third step is to set the new start cell
+        /*
+         * SKIP Second step is to reset an existing startCell - we're allowing just 1 finish cell to by manually setted
+         this.setCellAt(sc,this.EMPTY_CELL);
+         */
+        //our code makes posibile just 1 setting of start CELL
+        if (matrix[sc.getX()][sc.getY()]==this.FINISH_CELL)
+            return false;
+        
+        
+         /* 
+         * Third step is to set the new start cell and finishCell variable
          */
         this.setCellAt(row, column, this.FINISH_CELL);
-        
+        this.finishCell.setCell(row, column);
         return true;
     }
 
+    /**
+     * Checks if start cell has a valid value in the labyrinth
+     * @return true or false
+     */
+    public boolean startCellHasValue(){
+        if (this.getCellAt(this.getStartCell().getX(),this.getStartCell().getY())==this.START_CELL)
+        
+            return true;
+        
+        return false;
+    }
     
+    /**
+     * Checks if FINISH cell has a valid value in the labyrinth
+     * @return true or false
+     */
+    public boolean finishCellHasValue(){
+          if (this.getCellAt(this.finishCell().getX(),this.finishCell().getY())==this.FINISH_CELL)
+            return true;
+        
+        return false;
+    }
    
   
 }

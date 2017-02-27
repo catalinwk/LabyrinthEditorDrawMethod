@@ -30,12 +30,12 @@ implements Labyrinth {
     /**
      * row count
      */
-    private int rows = 0;
+    protected int rows = 0;
 
     /**
      * column count
      */
-    private int columns = 0;
+    protected int columns = 0;
     
     /**
      * Gets number of rows
@@ -53,8 +53,8 @@ implements Labyrinth {
         this.rows = rows;
     }
     
-    private Cell startCell = new Cell(0,0);
-    private Cell finishCell = new Cell(0,0);
+    protected Cell startCell = new Cell(0,0);
+    protected Cell finishCell = new Cell(0,0);
     
 
     LabyrinthMatrixImpl(String fileName){
@@ -151,8 +151,15 @@ implements Labyrinth {
             
             for (int i=0; i<rows; i++)
                 for (int j=0; j<columns; j++)
+                {
                     matrix[i][j]=f.nextInt();
-            
+                    
+                    //setting start and finish cell
+                    if (matrix[i][j]==this.START_CELL)
+                        startCell.setCell(i, j);
+                    if (matrix[i][j]==this.FINISH_CELL)
+                        finishCell.setCell(i,j);
+                }
             
         } catch (IOException e) {
             System.out.println("Error on importing labyrinth file!");
