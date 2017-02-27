@@ -21,6 +21,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import javax.imageio.*;
+import java.util.*;
+
 
 /**
  * used for storing labyrinth image
@@ -229,6 +231,20 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
                 
     }
     
+    @Action
+    public void labyrinthGUISolver(){
+        //creating a new solver
+        LabyrinthSolverBFS lSolver = new LabyrinthSolverBFS(myLabyrinth);
+        lSolver.setLabyrinth(myLabyrinth);
+        lSolver.solve();
+        ArrayList<Cell> solutionList = lSolver.getSolution();
+        
+        System.out.append("Solution: " + solutionList);
+        
+        myImageCreator.drawSolution(solutionList, labyrinthTracker);
+        myImageCreator.updateUI();
+        
+    }
     
     /** 
      * This method is called from within the constructor to
@@ -331,6 +347,8 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
             }
         });
 
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(laybyrintheditordrawmethod.LaybyrinthEditorDrawMethodApp.class).getContext().getActionMap(LaybyrinthEditorDrawMethodView.class, this);
+        jButton1.setAction(actionMap.get("labyrinthGUISolver")); // NOI18N
         jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
         jButton1.setName("jButton1"); // NOI18N
 
@@ -350,17 +368,18 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
                         .addComponent(wallCellButton, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(28, 28, 28)
                         .addComponent(jButton1)))
-                .addContainerGap(506, Short.MAX_VALUE))
+                .addContainerGap(516, Short.MAX_VALUE))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addGap(31, 31, 31)
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1)
                     .addComponent(labyrinthPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(mainPanelLayout.createSequentialGroup()
-                        .addComponent(wallCellButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(wallCellButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(freeCellButton, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -375,7 +394,6 @@ public class LaybyrinthEditorDrawMethodView extends FrameView {
         fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
         fileMenu.setName("fileMenu"); // NOI18N
 
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(laybyrintheditordrawmethod.LaybyrinthEditorDrawMethodApp.class).getContext().getActionMap(LaybyrinthEditorDrawMethodView.class, this);
         exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
         exitMenuItem.setName("exitMenuItem"); // NOI18N
         fileMenu.add(exitMenuItem);
@@ -740,6 +758,35 @@ class LabyrinthImageCreator extends javax.swing.JPanel {
      */
     public BufferedImage getImage(){
         return myImage;
+    }
+    
+    
+    public void drawSolution(ArrayList<Cell> solution, CellTracker myTracker){
+        
+        Cell firstCell = solution.get(0);
+        System.out.println("\nDraw method firstCell: " + firstCell);
+        
+        Cell middleCell = myTracker.getCellSpatialMiddle(firstCell.getX(), firstCell.getY());
+        System.out.println("CEll middle: " + middleCell);
+        //labyrinthTracker
+        
+        Graphics g2 = myImage.getGraphics();
+        g2.setPaintMode();
+        g2.setColor(Color.red);
+        
+        
+        for (int i=1; i<solution.size(); i++)
+        {
+            Cell currentCell = solution.get(i);
+            Cell currentMiddleCell = myTracker.getCellSpatialMiddle(currentCell.getX(), currentCell.getY());
+            
+            int x = middleCell.getX();
+            int y = middleCell.getY();
+            g2.drawLine(x,y,currentMiddleCell.getX(),currentMiddleCell.getY());
+            
+            System.out.println("Drawing rect: " + x + ", " + y  + ", " + currentMiddleCell.getX() + ", "+ currentMiddleCell.getY() );
+            middleCell.setCell(currentMiddleCell.getX(),currentMiddleCell.getY());
+        }
     }
 
 }

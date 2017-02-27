@@ -80,6 +80,19 @@ public class CellTracker {
         return 0;
     }
 
+    public Cell getCellSpatialMiddle(int x, int y){
+      for (SuperCell s:cellList){
+            if (s.getX()==x && s.getY()==y)
+            {
+                int halfX = s.getFirstCorner().getX()+(s.getFirstCorner().getX()-s.getSecondCorner().getX())/2*(-1);
+                int halfY = s.getFirstCorner().getY()+(s.getFirstCorner().getY()-s.getSecondCorner().getY())/2*(-1);
+                return new Cell(halfX, halfY);
+            }
+        }
+        
+      return null;
+    }
+    
   /**
      * Gets the spacial y coordinate of a matrix cell
      * @param x cell row

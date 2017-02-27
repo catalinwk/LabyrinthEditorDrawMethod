@@ -46,7 +46,7 @@ implements LabyrinthSolver
      * Constructor
      * @param labyrinth get a labyrinth
      */
-   LabyrinthSolverBFS (Labyrinth labyrinth){
+  public LabyrinthSolverBFS (Labyrinth labyrinth){
         this.labyrinth = labyrinth;
         currentCell = labyrinth.getStartCell();
         
@@ -145,7 +145,7 @@ implements LabyrinthSolver
         }
         //BFS Algorithm
         while (!BFSQueue.isEmpty() && currentCell!=labyrinth.finishCell()){
-                System.out.println("Solver running...");
+                System.out.println("\nSolver running...");
                //getting point of of queue
                 currentCell = BFSQueue.remove();
                 if (labyrinth.finishCell()==currentCell)
@@ -189,6 +189,33 @@ implements LabyrinthSolver
         
         return true;
               
+    }
+    
+    /**
+     * Returns the solution
+     * @return solution of the labyrinth
+     */
+    public ArrayList<Cell> getSolution(){
+        //remove duplicates
+        
+        //marking even positions for deleting
+        for (int i=0; i<explorationCellList.size(); i++)
+        {
+           // if (i%2!=0 && i!=0)
+              //  explorationCellList.get(i).setCell(-1, -1);
+        }
+        //deleting even positions
+        int i=0;
+        while (i<explorationCellList.size())
+        {
+            //if (explorationCellList.get(i).getX()==-1)
+                //explorationCellList.remove(i);
+            i++;
+        }
+        
+        explorationCellList.add(labyrinth.finishCell());
+        
+        return explorationCellList;
     }
 
     
